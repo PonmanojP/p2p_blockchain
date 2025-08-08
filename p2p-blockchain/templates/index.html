@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>P2P Blockchain Node</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <h1>Blockchain Node P2P</h1>
+    </header>
+
+    <div class="container">
+      
+      <!-- Add Transaction -->
+      <section class="panel">
+        <h2>Add Transaction</h2>
+        <form action="/add_transaction" method="POST">
+          <input type="text" name="sender" placeholder="Sender" required />
+          <input type="text" name="receiver" placeholder="Receiver" required />
+          <input type="number" name="amount" placeholder="Amount" required />
+          <button type="submit">Add Transaction</button>
+        </form>
+      </section>
+
+      <!-- Connect Peer Node -->
+      <section class="panel">
+        <h2>Connect Peer Node</h2>
+        <form action="/connect_node" method="POST">
+          <input type="text" name="peer" placeholder="http://127.0.0.1:5001" required />
+          <button type="submit">Connect</button>
+        </form>
+      </section>
+
+      <!-- Actions -->
+      <section class="panel actions">
+        <h2>Blockchain Actions</h2>
+        <a class="btn" href="/mine_block">Mine Block</a>
+        <a class="btn" href="/replace_chain">Sync Chain</a>
+      </section>
+
+      <!-- Connected Peers -->
+      <section class="panel peers">
+        <h2>Connected Peers</h2>
+        <ul>
+          {% for peer in peers %}
+            <li>{{ peer }}</li>
+          {% else %}
+            <li>No peers connected</li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <!-- Blockchain -->
+      <section class="panel chain">
+        <h2>Blockchain</h2>
+        {% for block in chain %}
+          <div class="block">
+            <div><strong>Index:</strong> {{ block.index }}</div>
+            <div><strong>Proof:</strong> {{ block.proof }}</div>
+            <div><strong>Previous Hash:</strong> {{ block.previous_hash }}</div>
+            <div><strong>Transactions:</strong></div>
+            <ul>
+              {% for txn in block.transactions %}
+                <li>{{ txn.sender }} → {{ txn.receiver }}: ₹{{ txn.amount }}</li>
+              {% else %}
+                <li>No transactions in this block</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% else %}
+          <p>No blocks found.</p>
+        {% endfor %}
+      </section>
+
+    </div>
+  </div>
+  <!-- Loader overlay -->
+<div id="loader" class="loader-overlay" style="display: none;">
+  <div class="loader-box">
+    <div class="spinner"></div>
+    <p>Mining block... Please wait</p>
+  </div>
+</div>
+
+<script>
+  const mineBtn = document.querySelector('.btn[href="/mine_block"]');
+  const loader = document.getElementById("loader");
+
+  mineBtn.addEventListener("click", function (e) {
+    e.preventDefault(); // Prevent default navigation
+    loader.style.display = "flex";
+
+    fetch("/mine_block")
+      .then((res) => res.text())
+      .then((data) => {
+        window.location.reload(); // Refresh to see updated chain
+      })
+      .catch((err) => {
+        alert("Error mining block");
+        console.error(err);
+      })
+      .finally(() => {
+        loader.style.display = "none";
+      });
+  });
+</script>
+
+</body>
+</html>
